@@ -1,0 +1,73 @@
+<!Doctype>
+<html>
+<body>
+<form action="" method="post" enctype="multipart/form_data">
+	Archive File : <input type="text" name="name" /><br />
+	<input type="file" name="files[]" multiple="true" />
+	<input type="submit" name = "submit" value="Archive" />
+</form> 
+
+<?php
+
+if (isset($_POST["submit"])) 
+{
+	$fileArray = $_FILES["files"];
+
+		for($i = 0; $i < count($fileArray["name"]); $i++ )
+		{
+			$fileName = $fileArray["name"][$i];
+			$tmpFile = $fileArray["tmp_name"][$i];
+
+			move_uploaded_file($tmpFile,$fileName);
+		}
+
+		$archiveName = $_POST["name"].".zip";
+
+		$filesArrayNames = $_FILES["files"]["name"];
+
+		$zipDir = scandir("zips/");
+		$error = false;
+
+		foreach ($zipDir as $zipDirFile) 
+		{
+			
+			if ($zipDirFile == $archiveName) 
+			{
+				$error = true;
+				break;
+			}
+		}
+
+		if ($error == false) 
+		{
+				$tmpDir = scandir("zip/");
+				$zip = new ZipArchive;
+				$zip -> open("zip/".$archiveName,ZipArchive::CREATE);
+
+
+				for ($i=0; $i < count($fileArray["name"]); $i++) 
+				{ 
+					
+					$fileName = $fileArray["name"][$i];
+
+					foreach ($tmpDir as $tmpDirFile) 
+					{
+						
+						if ($tmpDirFile == $fileName) 
+						{
+							$zip->addFile("zip/".$fileName);
+							echo "adding:".$fileName."<br />";
+						}
+					}
+				}
+				$zip->close();
+		}
+		else
+		{
+				echo "Name already exist";
+		}
+
+}
+
+?>
+</body>
